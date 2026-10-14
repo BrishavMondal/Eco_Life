@@ -1,0 +1,935 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5f7ef">
+<title>EcoLife — Human Carbon Footprint Calculator</title>
+<meta name="description" content="Estimate your personal carbon footprint from home energy, transport, flights, diet, and waste.">
+
+<style>
+:root {
+  --green: #286747;
+  --dark: #173d2c;
+  --light: #e6efdf;
+  --lime: #cce8a9;
+  --bg: #f5f7ef;
+  --white: #fff;
+  --text: #263a2e;
+  --muted: #778178;
+  --border: #e3e8de;
+  --radius: 22px;
+  --shadow: 0 14px 40px rgba(23,61,44,.07);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 85px; }
+
+body {
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+}
+
+button, input, select { font: inherit; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; }
+
+.container { width: min(1120px, 90%); margin: auto; }
+section { padding: 85px 0; }
+
+.eyebrow {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: 17px;
+}
+
+h1, h2, h3 { color: var(--dark); line-height: 1.2; }
+
+.section-heading {
+  text-align: center;
+  max-width: 650px;
+  margin: 0 auto 42px;
+}
+
+.section-heading h2 {
+  font-size: clamp(30px, 4vw, 44px);
+  letter-spacing: -1.4px;
+  margin-bottom: 15px;
+}
+
+.section-heading p { color: var(--muted); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 21px;
+  border: 0;
+  border-radius: 50px;
+  background: var(--green);
+  color: white;
+  font-weight: 750;
+  font-size: 14px;
+  transition: .2s;
+}
+
+.btn:hover { background: var(--dark); transform: translateY(-2px); }
+
+.btn-outline {
+  color: var(--dark);
+  background: white;
+  border: 1px solid var(--border);
+}
+
+.btn-outline:hover { background: var(--light); color: var(--dark); }
+
+/* Navigation */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(245,247,239,.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.nav-inner {
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--dark);
+  font-size: 22px;
+  font-weight: 850;
+  letter-spacing: -1px;
+}
+
+.logo-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--green);
+  color: white;
+  font-size: 22px;
+}
+
+.nav-links { display: flex; gap: 27px; font-size: 14px; font-weight: 650; }
+.nav-links a:hover { color: var(--green); }
+
+/* Hero */
+
+.hero {
+  padding: 80px 0;
+  background: radial-gradient(ellipse at 85% 15%, #e0ead1, transparent 38%), var(--bg);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 55px;
+  align-items: center;
+}
+
+.hero h1 {
+  font-size: clamp(43px, 5.5vw, 67px);
+  letter-spacing: -3px;
+  margin-bottom: 23px;
+}
+
+.hero h1 em { color: var(--green); font-family: Georgia, serif; font-weight: 500; }
+
+.hero-description { color: var(--muted); max-width: 490px; margin-bottom: 27px; }
+
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 25px; }
+
+.hero-note { font-size: 12px; color: var(--muted); }
+
+.hero-image {
+  min-height: 400px;
+  border-radius: 32px;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, transparent 45%, rgba(15,46,30,.6)),
+    url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1100&q=85")
+    center / cover;
+  box-shadow: var(--shadow);
+}
+
+.image-card {
+  position: absolute;
+  left: 22px;
+  bottom: 22px;
+  padding: 20px 23px;
+  border-radius: 17px;
+  background: rgba(255,255,255,.94);
+}
+
+.image-card small { color: var(--muted); display: block; font-size: 11px; }
+.image-card strong { font-size: 24px; color: var(--dark); }
+
+/* Highlights */
+
+.highlights { background: var(--dark); color: white; padding: 27px 0; }
+
+.highlight-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 25px; }
+
+.highlight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.highlight-icon { font-size: 28px; }
+.highlight strong { display: block; font-size: 14px; }
+.highlight p { color: #c0d0c4; font-size: 12px; }
+
+/* Calculator */
+
+.calculator-section { background: white; }
+
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 1.12fr .88fr;
+  gap: 27px;
+  align-items: start;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 30px;
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 26px;
+}
+
+.panel-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--light);
+  font-size: 22px;
+}
+
+.panel-heading h3 { font-size: 21px; margin-bottom: 5px; }
+.panel-heading p { font-size: 12px; color: var(--muted); }
+
+.form-section-title {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 800;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 19px 16px; }
+
+.form-group { min-width: 0; }
+.form-group.full { grid-column: 1 / -1; }
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 750;
+  margin-bottom: 8px;
+  color: #354b3c;
+}
+
+input, select {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #dfe6dc;
+  border-radius: 11px;
+  padding: 11px 12px;
+  background: #fbfcf8;
+  color: var(--text);
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(40,103,71,.1);
+}
+
+.hint { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; }
+
+.calculate-btn { width: 100%; margin-top: 26px; min-height: 51px; }
+
+.results-panel {
+  background: var(--dark);
+  color: white;
+  border: 0;
+  position: sticky;
+  top: 95px;
+}
+
+.results-panel .panel-heading h3 { color: white; }
+.results-panel .panel-heading p { color: #c0d0c4; }
+.results-panel .panel-icon { background: rgba(255,255,255,.12); }
+
+.total-box {
+  padding: 23px;
+  border-radius: 17px;
+  background: rgba(255,255,255,.08);
+  margin-bottom: 15px;
+}
+
+.total-label { color: #c0d0c4; font-size: 12px; }
+
+.total-number { display: flex; align-items: baseline; gap: 8px; margin: 7px 0; }
+
+.total-number strong { font-size: clamp(39px, 5vw, 55px); letter-spacing: -2px; }
+.total-number span { font-size: 13px; color: #c0d0c4; }
+
+.total-box p { font-size: 12px; color: #c0d0c4; }
+
+.result-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+
+.result-stat { padding: 15px; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; }
+.result-stat span { display: block; color: #c0d0c4; font-size: 11px; }
+.result-stat strong { display: block; font-size: 23px; margin: 5px 0; }
+.result-stat small { color: #c0d0c4; font-size: 10px; }
+
+.breakdown-title { font-size: 14px; margin-bottom: 16px; }
+
+.breakdown-row { margin-bottom: 15px; }
+.breakdown-info { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; margin-bottom: 7px; }
+.breakdown-info span { color: #d1dfd4; }
+.breakdown-info strong { white-space: nowrap; }
+
+.bar-track { height: 7px; border-radius: 20px; background: rgba(255,255,255,.15); overflow: hidden; }
+.bar-fill { height: 100%; width: 0; background: var(--lime); border-radius: 20px; transition: width .35s; }
+
+.tip-box { padding: 16px; border-radius: 13px; background: #dcebc9; color: var(--dark); margin-top: 22px; font-size: 12px; }
+.tip-box strong { display: block; margin-bottom: 5px; }
+
+.method-note { margin-top: 17px; font-size: 10px; color: #c0d0c4; line-height: 1.7; }
+
+/* Steps */
+
+.steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+
+.step {
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: white;
+}
+
+.step-number {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: var(--light);
+  color: var(--green);
+  font-weight: 850;
+  margin-bottom: 22px;
+}
+
+.step h3 { font-size: 18px; margin-bottom: 12px; }
+.step p { font-size: 13px; color: var(--muted); }
+
+/* Sustainability banner */
+
+.mission {
+  border-radius: 28px;
+  padding: 58px;
+  color: white;
+  background:
+    linear-gradient(90deg, rgba(18,54,36,.94), rgba(18,54,36,.55)),
+    url("https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1400&q=85")
+    center / cover;
+}
+
+.mission h2 { max-width: 620px; color: white; font-size: clamp(30px,4vw,43px); margin-bottom: 18px; }
+.mission p { max-width: 520px; color: #d1dfd4; margin-bottom: 24px; font-size: 14px; }
+
+/* FAQ */
+
+.faq-list { max-width: 790px; margin: auto; }
+.faq-item { border-bottom: 1px solid var(--border); }
+
+.faq-question {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 22px 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--dark);
+  font-weight: 750;
+}
+
+.faq-question span { color: var(--green); font-size: 23px; }
+.faq-answer { display: none; color: var(--muted); font-size: 13px; padding: 0 25px 22px 0; }
+.faq-item.active .faq-answer { display: block; }
+
+/* Footer */
+
+footer { background: #123425; color: white; padding: 42px 0 22px; }
+.footer-top { display: flex; justify-content: space-between; gap: 30px; padding-bottom: 30px; }
+.footer-brand { max-width: 340px; }
+.footer-brand .logo { color: white; margin-bottom: 13px; }
+.footer-brand p { color: #c0d0c4; font-size: 12px; }
+.footer-links { display: flex; gap: 22px; flex-wrap: wrap; font-size: 12px; }
+.footer-links a:hover { color: var(--lime); }
+.footer-bottom { border-top: 1px solid #365543; padding-top: 20px; display: flex; justify-content: space-between; gap: 15px; color: #c0d0c4; font-size: 11px; }
+
+@media(max-width: 850px) {
+  .hero-grid { gap: 28px; }
+  .calculator-layout { grid-template-columns: 1fr; }
+  .results-panel { position: static; }
+  .nav-links { gap: 14px; }
+}
+
+@media(max-width: 650px) {
+  .container { width: 92%; }
+  section { padding: 62px 0; }
+  .nav-inner { min-height: 67px; }
+  .nav-links { display: none; }
+  .nav-inner > .btn { padding: 10px 13px; font-size: 11px; }
+  .hero { padding: 55px 0; }
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 45px; letter-spacing: -2px; }
+  .hero-image { min-height: 300px; }
+  .highlight-grid { grid-template-columns: 1fr; gap: 18px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.full, .form-section-title { grid-column: auto; }
+  .panel { padding: 22px; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .mission { padding: 30px 23px; }
+  .footer-top, .footer-bottom { flex-direction: column; }
+}
+
+@media(prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="navbar">
+  <div class="container nav-inner">
+    <a href="#home" class="logo"><span class="logo-icon">♧</span> EcoLife</a>
+    <nav class="nav-links">
+      <a href="#calculator">Calculator</a>
+      <a href="#how">How it works</a>
+      <a href="#about">Our mission</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn" href="#calculator">Calculate footprint ↗</a>
+  </div>
+</header>
+
+<main>
+
+<section class="hero" id="home">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">🌿 Live a little greener</span>
+      <h1>Your lifestyle has a footprint. <em>Make it lighter.</em></h1>
+      <p class="hero-description">
+        Discover how your everyday choices affect the planet.
+        Estimate your personal carbon footprint and find ways
+        to reduce your environmental impact.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="#calculator">Calculate my footprint ↗</a>
+        <a class="btn btn-outline" href="#how">Learn more</a>
+      </div>
+      <p class="hero-note">✓ Free to use · No account required</p>
+    </div>
+    <div class="hero-image" role="img" aria-label="Green forest landscape">
+      <div class="image-card">
+        <small>YOUR FIRST STEP</small>
+        <strong>Know your impact 🌱</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="highlights">
+  <div class="container highlight-grid">
+    <div class="highlight">
+      <span class="highlight-icon">🏡</span>
+      <div><strong>Everyday living</strong><p>Understand your home energy use.</p></div>
+    </div>
+    <div class="highlight">
+      <span class="highlight-icon">🚲</span>
+      <div><strong>Smarter travel</strong><p>Explore lower-emission transport choices.</p></div>
+    </div>
+    <div class="highlight">
+      <span class="highlight-icon">🌎</span>
+      <div><strong>A greener future</strong><p>Find opportunities to reduce emissions.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="calculator-section" id="calculator">
+  <div class="container">
+    <div class="section-heading">
+      <span class="eyebrow">✳ Your personal impact</span>
+      <h2>Human Carbon Footprint Calculator</h2>
+      <p>Enter your typical monthly and yearly habits to estimate your annual emissions.</p>
+    </div>
+
+    <div class="calculator-layout">
+      <div class="panel">
+        <div class="panel-heading">
+          <div class="panel-icon">🌱</div>
+          <div><h3>Your lifestyle</h3><p>Use your own figures where possible.</p></div>
+        </div>
+
+        <form id="footprintForm">
+          <div class="form-grid">
+
+            <div class="form-section-title">🏠 Home energy</div>
+
+            <div class="form-group">
+              <label for="people">People in your household</label>
+              <input id="people" type="number" min="1" max="30" value="3" required>
+              <span class="hint">Emissions will be divided per person.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="electricity">Electricity (kWh/month)</label>
+              <input id="electricity" type="number" min="0" max="100000" value="150" required>
+              <span class="hint">Check your electricity bill if available.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="lpg">LPG cooking gas (kg/month)</label>
+              <input id="lpg" type="number" min="0" max="10000" value="12" required>
+              <span class="hint">Enter 0 if not used.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="electricityFactor">Grid emissions (kg CO₂e/kWh)</label>
+              <input id="electricityFactor" type="number" min="0" max="5" step="0.01" value="0.60" required>
+              <span class="hint">Illustrative default; adjust for your location.</span>
+            </div>
+
+            <div class="form-section-title">🚗 Transportation</div>
+
+            <div class="form-group">
+              <label for="car">Petrol/diesel car (km/week)</label>
+              <input id="car" type="number" min="0" max="100000" value="30" required>
+            </div>
+
+            <div class="form-group">
+              <label for="motorbike">Motorbike (km/week)</label>
+              <input id="motorbike" type="number" min="0" max="100000" value="40" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bus">Bus/train (passenger km/week)</label>
+              <input id="bus" type="number" min="0" max="100000" value="40" required>
+            </div>
+
+            <div class="form-group">
+              <label for="flights">Return flights per year</label>
+              <input id="flights" type="number" min="0" max="1000" value="0" required>
+              <span class="hint">Each return journey counts as one.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="flightType">Typical return flight distance</label>
+              <select id="flightType">
+                <option value="500">Short-haul (about 500 km)</option>
+                <option value="2000">Medium-haul (about 2,000 km)</option>
+                <option value="8000">Long-haul (about 8,000 km)</option>
+              </select>
+            </div>
+
+            <div class="form-section-title">🍃 Food and waste</div>
+
+            <div class="form-group full">
+              <label for="diet">Which diet best describes you?</label>
+              <select id="diet">
+                <option value="1500">Mostly plant-based / vegan</option>
+                <option value="1800">Vegetarian</option>
+                <option value="2200" selected>Mixed diet with some meat</option>
+                <option value="2800">Meat-heavy diet</option>
+              </select>
+              <span class="hint">Illustrative annual food footprint per person in kg CO₂e.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="shopping">Shopping and new goods</label>
+              <select id="shopping">
+                <option value="300">Low consumption</option>
+                <option value="800" selected>Moderate consumption</option>
+                <option value="1600">Frequent purchases</option>
+              </select>
+              <span class="hint">Approximate annual emissions per person.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="waste">Waste and disposal</label>
+              <select id="waste">
+                <option value="100">Mostly recycled/composted</option>
+                <option value="250" selected>Some recycling</option>
+                <option value="400">Little recycling</option>
+              </select>
+              <span class="hint">Simplified annual estimate per person.</span>
+            </div>
+
+          </div>
+
+          <button type="submit" class="btn calculate-btn">Calculate my footprint →</button>
+        </form>
+      </div>
+
+      <aside class="panel results-panel" aria-live="polite">
+        <div class="panel-heading">
+          <div class="panel-icon">🌍</div>
+          <div><h3>Your results</h3><p>Estimated emissions for one year.</p></div>
+        </div>
+
+        <div class="total-box">
+          <div class="total-label">Annual footprint per person</div>
+          <div class="total-number">
+            <strong id="total">—</strong><span>tonnes CO₂e</span>
+          </div>
+          <p id="totalKg">Enter your lifestyle details to calculate.</p>
+        </div>
+
+        <div class="result-stats">
+          <div class="result-stat">
+            <span>Household total</span>
+            <strong id="household">—</strong>
+            <small>tonnes CO₂e / year</small>
+          </div>
+          <div class="result-stat">
+            <span>Daily per person</span>
+            <strong id="daily">—</strong>
+            <small>kg CO₂e / day</small>
+          </div>
+        </div>
+
+        <h4 class="breakdown-title">Your emissions breakdown</h4>
+
+        <div id="breakdown">
+          <div class="breakdown-row">
+            <div class="breakdown-info"><span>Home energy</span><strong>—</strong></div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+          </div>
+          <div class="breakdown-row">
+            <div class="breakdown-info"><span>Transport & flights</span><strong>—</strong></div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+          </div>
+          <div class="breakdown-row">
+            <div class="breakdown-info"><span>Food</span><strong>—</strong></div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+          </div>
+          <div class="breakdown-row">
+            <div class="breakdown-info"><span>Shopping</span><strong>—</strong></div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+          </div>
+          <div class="breakdown-row">
+            <div class="breakdown-info"><span>Waste</span><strong>—</strong></div>
+            <div class="bar-track"><div class="bar-fill"></div></div>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <strong>🌿 Your next green step</strong>
+          <p id="tip">Calculate your footprint to see a suggested action.</p>
+        </div>
+
+        <p class="method-note">
+          This is an illustrative lifestyle estimate, not an audited
+          carbon inventory. Actual emissions depend on location,
+          energy sources, travel conditions, and consumption patterns.
+          The model excludes some indirect and public-service emissions.
+        </p>
+
+        <button type="button" class="btn btn-outline" id="printBtn"
+          style="width:100%;margin-top:18px">Print / Save results</button>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="container">
+    <div class="section-heading">
+      <span class="eyebrow">✳ Simple and transparent</span>
+      <h2>How it works</h2>
+      <p>Understand the activities that contribute to your personal carbon footprint.</p>
+    </div>
+
+    <div class="steps-grid">
+      <article class="step">
+        <div class="step-number">01</div>
+        <h3>Enter your habits</h3>
+        <p>Add your household energy use, transport distances, flights, diet, shopping, and waste information.</p>
+      </article>
+      <article class="step">
+        <div class="step-number">02</div>
+        <h3>Estimate emissions</h3>
+        <p>Convert each activity into an annual estimate and combine the categories into one result.</p>
+      </article>
+      <article class="step">
+        <div class="step-number">03</div>
+        <h3>Make changes</h3>
+        <p>Use your category breakdown to identify everyday activities where lower emissions may be possible.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <div class="mission">
+      <span class="eyebrow" style="color:#cce8a9">A healthier planet starts with awareness</span>
+      <h2>Small lifestyle changes can be part of a bigger solution.</h2>
+      <p>Choose efficient energy use, rethink unnecessary journeys, reduce waste, and make informed consumption choices.</p>
+      <a class="btn" href="#calculator" style="background:#cce8a9;color:#173d2c">Calculate your impact ↗</a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="container">
+    <div class="section-heading">
+      <span class="eyebrow">✳ Frequently asked questions</span>
+      <h2>Understand your footprint</h2>
+      <p>Some important things to know about your result.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item active">
+        <button class="faq-question" aria-expanded="true">
+          What is a carbon footprint?<span>+</span>
+        </button>
+        <div class="faq-answer">A carbon footprint estimates the greenhouse gas emissions associated with activities, products, or lifestyles. It is commonly expressed as kilograms or tonnes of carbon dioxide equivalent (CO₂e).</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          Is this result completely accurate?<span>+</span>
+        </button>
+        <div class="faq-answer">No. This is a simplified educational estimate. The default emission factors and lifestyle assumptions should be replaced with verified, location-specific data for research or official reporting.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          Why does electricity usage matter?<span>+</span>
+        </button>
+        <div class="faq-answer">Electricity-related emissions depend on how the electricity is generated. The calculator multiplies monthly consumption by an editable grid emissions factor.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" aria-expanded="false">
+          How can I lower my footprint?<span>+</span>
+        </button>
+        <div class="faq-answer">Consider reducing unnecessary car journeys and flights, improving energy efficiency, limiting avoidable purchases, and reducing food waste. The best opportunities depend on your actual lifestyle.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#home" class="logo"><span class="logo-icon">♧</span> EcoLife</a>
+        <p>A simple starting point for understanding your personal environmental impact.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#home">Home</a>
+        <a href="#calculator">Calculator</a>
+        <a href="#how">How it works</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span id="year"></span> EcoLife · Educational demonstration</p>
+      <p>Live thoughtfully. Leave a lighter footprint.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Illustrative factors only. Replace with sourced, local factors
+// before presenting results as accurate carbon accounting.
+
+const FACTORS = {
+  lpg: 3.0,          // kg CO2e per kg LPG; simplified
+  car: 0.20,         // kg CO2e per vehicle-km
+  motorbike: 0.08,   // kg CO2e per vehicle-km
+  bus: 0.06,         // kg CO2e per passenger-km
+  flight: 0.15       // kg CO2e per passenger-km
+};
+
+const form = document.getElementById("footprintForm");
+
+function number(id) {
+  return Number(document.getElementById(id).value);
+}
+
+function calculate(event) {
+  if (event) event.preventDefault();
+
+  const people = number("people");
+  const electricity = number("electricity");
+  const grid = number("electricityFactor");
+  const lpg = number("lpg");
+  const car = number("car");
+  const motorbike = number("motorbike");
+  const bus = number("bus");
+  const flights = number("flights");
+  const flightDistance = number("flightType");
+  const diet = number("diet");
+  const shopping = number("shopping");
+  const waste = number("waste");
+
+  const fields = [
+    people, electricity, grid, lpg, car, motorbike,
+    bus, flights, flightDistance, diet, shopping, waste
+  ];
+
+  if (
+    fields.some(value => !Number.isFinite(value) || value < 0) ||
+    people < 1 || people > 30 || grid > 5 ||
+    electricity > 100000 || lpg > 10000 ||
+    car > 100000 || motorbike > 100000 ||
+    bus > 100000 || flights > 1000
+  ) {
+    alert("Please check your entries and use valid non-negative values.");
+    return;
+  }
+
+  // Home energy: household total per year.
+  const home = electricity * 12 * grid + lpg * 12 * FACTORS.lpg;
+
+  // Travel: annual estimates.
+  const transport =
+    (car * FACTORS.car +
+     motorbike * FACTORS.motorbike +
+     bus * FACTORS.bus) * 52 +
+    flights * flightDistance * 2 * FACTORS.flight;
+
+  // Diet, shopping and waste are illustrative annual
+  // per-person assumptions in kg CO2e.
+  const food = diet * people;
+  const goods = shopping * people;
+  const disposal = waste * people;
+
+  const categories = [
+    { name: "Home energy", value: home },
+    { name: "Transport & flights", value: transport },
+    { name: "Food", value: food },
+    { name: "Shopping", value: goods },
+    { name: "Waste", value: disposal }
+  ];
+
+  const householdTotal = categories.reduce((sum, item) => sum + item.value, 0);
+  const perPerson = householdTotal / people;
+  const daily = perPerson / 365;
+  const tonnes = perPerson / 1000;
+
+  document.getElementById("total").textContent = tonnes.toFixed(2);
+  document.getElementById("totalKg").textContent =
+    perPerson.toLocaleString(undefined, { maximumFractionDigits: 1 }) +
+    " kg CO₂e per person each year";
+
+  document.getElementById("household").textContent =
+    (householdTotal / 1000).toFixed(2);
+
+  document.getElementById("daily").textContent = daily.toFixed(2);
+
+  const rows = document.querySelectorAll("#breakdown .breakdown-row");
+  const maximum = Math.max(...categories.map(item => item.value), 1);
+
+  categories.forEach((item, index) => {
+    const row = rows[index];
+    row.querySelector(".breakdown-info strong").textContent =
+      (item.value / 1000).toFixed(2) + " t";
+    row.querySelector(".bar-fill").style.width =
+      Math.max(0, item.value / maximum * 100) + "%";
+  });
+
+  // Recommend an action based on the largest category.
+  const largest = [...categories].sort((a, b) => b.value - a.value)[0];
+
+  const tips = {
+    "Home energy": "Review your electricity use, switch off unused equipment, and improve appliance efficiency.",
+    "Transport & flights": "Consider public transport, walking, cycling, shared rides, or avoiding unnecessary flights.",
+    "Food": "Reduce food waste and consider adding more plant-based meals if suitable for you.",
+    "Shopping": "Buy fewer unnecessary items, repair what you own, and consider durable second-hand goods.",
+    "Waste": "Separate recyclable materials where local facilities accept them, and compost suitable food waste."
+  };
+
+  document.getElementById("tip").textContent =
+    "Your largest estimated category is " + largest.name +
+    ". " + tips[largest.name];
+}
+
+form.addEventListener("submit", calculate);
+
+document.getElementById("printBtn").addEventListener("click", () => {
+  window.print();
+});
+
+document.querySelectorAll(".faq-question").forEach(button => {
+  button.addEventListener("click", () => {
+    const item = button.closest(".faq-item");
+    const wasOpen = item.classList.contains("active");
+
+    document.querySelectorAll(".faq-item").forEach(faq => {
+      faq.classList.remove("active");
+      faq.querySelector(".faq-question").setAttribute("aria-expanded", "false");
+    });
+
+    if (!wasOpen) {
+      item.classList.add("active");
+      button.setAttribute("aria-expanded", "true");
+    }
+  });
+});
+
+document.getElementById("year").textContent = new Date().getFullYear();
+
+calculate();
+</script>
+
+</body>
+</html>
